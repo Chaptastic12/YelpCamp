@@ -1,0 +1,49 @@
+<%- include("../partials/header") %>
+
+
+	<div class="row">
+		<h1 style="text-align: center;">
+		Edit <%=user.username%>
+		</h1>
+		<div style="width: 30%; margin: 25px auto;">
+			<form action="/admin/<%=user._id%>?_method=PUT" method="POST">
+				<h3>
+					User Properties
+				</h3>
+				<div class="form-group">
+					<label for="username">Edit Username</label>
+					<input class="form-control" id="username" type="text" value="<%=user.username%>" name="info[username]">
+					<label for="email">Edit Email</label>
+					<input class="form-control" id="email" type="text" value="<%=user.email%>" name="info[email]">
+				</div>
+				<div class="form-group">
+					<label for="firstname">Edit Firstname</label>
+					<input class="form-control" id="firstname" type="text" value="<%=user.firstName%>" name="info[firstName]">
+					<label for="lastname">Edit Lastname</label>
+					<input class="form-control" id="lastname" type="text" value="<%=user.lastName%>" name="info[lastName]">
+				</div>
+				<div class="form-group">
+					<h3>Admin Privileges</h3>
+					<div>
+						<% if(user.isAdmin){ %>
+								<label for="removeRights">Remove Admin Privileges</label>
+								<input class="btn btn-danger" id="removeRights" type="radio" value="false" name="info[isAdmin]">
+						<% } %>
+						<% if(!user.isAdmin){ %>
+							<label for="addRights">Add Admin Privileges</label>
+							<input class="btn btn-success" id="addRights" type="radio" value="true" name="info[isAdmin]">
+						 <% } %>
+					</div>
+				</div>
+				<div class="form-group">
+					<input class="btn btn-lg btn-default btn-primary btn-block" type="submit">
+				</div>
+			</form>
+			<a href="/admin">Back</a>
+		</div>
+
+		
+	</div>
+	
+
+<%- include("../partials/footer") %>

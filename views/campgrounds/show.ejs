@@ -1,0 +1,188 @@
+<%- include("../partials/header") %>
+
+    <div class="row">
+        <div class="col-md-3">
+			 <!--Review section-->
+            <div class="card card-body">
+				<div class="text-center">
+					<p class="lead"><strong>Reviews</strong></p>
+				</div>
+                <div class="card-title">
+                    <% if (campground.rating === 0) { %>
+                    <h7>
+                        <em>No reviews yet</em>
+                    </h7>
+					<% } else { %>
+                    <p>
+                        <span class="fa fa-star checked"></span>
+                        <span class="fa fa-star <% if (campground.rating > 1.5) { %> checked <% } %>"></span>
+                        <span class="fa fa-star <% if (campground.rating > 2.5) { %> checked <% } %>"></span>
+                        <span class="fa fa-star <% if (campground.rating > 3.5) { %> checked <% } %>"></span>
+                        <span class="fa fa-star <% if (campground.rating > 4.5) { %> checked <% } %>"></span>
+						<br>
+                        <em>(total reviews: <%= campground.reviews.length %>)</em>
+                    </p>
+                    <p>
+                        Current campground rating: <strong><%= campground.rating.toFixed(2) %></strong>
+                    </p>
+					<h5>Latest reviews:</h5>
+                    <hr style="margin-top: 0;">
+                    <% campground.reviews.slice(0, 5).forEach(function(review){ %>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
+                            <div>Review by: <strong><%= review.author.username %></strong></div>
+                        </div>
+                        <div class="col-md-9">
+                            <p style="text-align: justify; word-wrap: break-word;">
+                                <%= review.text %><br>
+								<em><%= review.updatedAt.toDateString() %></em>
+                            </p>
+							<div>
+								<% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin === true){ %>
+									<a class="btn btn-xs btn-warning"
+									   href="/campgrounds/<%=campground._id %>/reviews/<%=review._id %>/edit">Edit</a>
+									<form class="deleteForm" action="/campgrounds/<%=campground._id %>/reviews/<%=review._id %>?_method=DELETE" method="POST">
+										<input type="submit" class="btn btn-xs btn-danger" value="Delete">
+									</form>
+                           		 <% } %>
+							</div>
+                            
+                        </div>
+                    </div>
+                    <hr>
+                    <% }); %>
+                    <div style="margin-bottom: 10px;">
+                        <a href="/campgrounds/<%= campground._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a>
+                    </div>
+                    <% } %>
+                    <div>
+                        <a class="btn btn-primary btn-sm <% if (currentUser && campground.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/campgrounds/<%= campground._id %>/reviews/new">
+                            Write a New Review</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+		<!--Campground image and information -->
+        <div class="col-md-9">
+            <div class="card mb-3">
+                <img class="card-img-top" src="<%= campground.image %>">
+                <div class="card-body" style="margin:5px">
+                    <p class="float-right">$<%=campground.cost%>/night</p>
+                    <h4 class="card-title"><a><%=campground.name%></a></h4>
+					<hr>
+                    <p><%= campground.description %></p>
+                    <p>
+                        <em>Submitted By <%= campground.author.username %>, <%=moment(campground.createdAt).fromNow()%></em>
+                    </p>
+                    <% if(currentUser && campground.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin === true){ %>
+                        <a class="btn btn-xs btn-warning" href="/campgrounds/<%= campground._id %>/edit">Edit</a>
+                        <form class="deleteForm" action="/campgrounds/<%= campground._id %>?_method=DELETE" method="POST">
+                            <button class="btn btn-xs btn-danger">Delete</button>
+                        </form>
+                    <% } %>
+                </div>
+            </div>
+			<!--End Campground image and information -->
+			
+            <!--Comment section-->
+            <div class="card card-body">
+					<!-- Set up the button that will collapse the 'add new comment' area -->
+					<div class="text-right">
+						<a class="btn btn-success float-right" role="button" data-toggle="collapse" href="#collapseComment" aria-expanded="false" aria-controls="collapseComment">
+							<i class="fas fa-plus-square" aria-hidden="true"></i> Add New Comment</a>
+						<!-- Comment section Title-->
+						<h4 class="float-left"><strong> Comments <i class="fas fa-comment"></i></strong></h4>
+					</div>
+					
+					<!--Start of the comment form-->
+					<div class="collapse" id="collapseComment">
+						<div class="card card-body" style="border-left: 5px solid #00c851">
+							<% if(!currentUser) { %>
+								<!--Direct them to the login page since they are not logged in-->
+								<h5>You need to login before you can comment. <a href="/login">Click here to login.</a></h5>
+							<% } %>
+							<% if(currentUser) { %>
+								<!--If the user is logged in, allow them to make a comment -->
+								<h4>Write your comment <i class="far fa-edit" aria-hidden="true"></i></h4>
+								<form id="add-comment-form" action="/campgrounds/<%=campground._id%>/comments" method="POST">
+									<div class="form-group">
+										<input class="form-control" type="text" disabled value="<%=currentUser.username%>">
+									</div>
+									<div class="form-group">
+										<textarea class="form-control" type="text" name="comment[text]" placeholder="Write your comment here..." form="add-comment-form" rows="5" cols="70"></textarea>
+									</div>
+									<div class="form-group">
+										<button class="btn btn-sm btn-success">Comment <i class="fas fa-comment" aria-hidden="true"></i></button>
+									</div>	
+								</form>
+							<% } %>
+						</div>
+					</div>
+					<!--End of the comment form-->
+					<hr>
+					<!--Check if any comments exist-->
+					<% if(campground.comments.length === 0){ %>
+						<em syle="color: gray">No comments exist yet</em>
+					<% } %>
+					
+					<!--If comments do exist, display them over a forEach loop-->
+					<% campground.comments.forEach(function(comment){ %>
+						<div class="row">
+							<div class="col-md-12">
+								<Strong>
+									<% if(currentUser && currentUser._id.equals(comment.author.id)){ %>
+										<i style="color: orange" class="fas fa-user" aria-hidden="true'"></i>
+									<% } else { 
+											if(currentUser && currentUser.isAdmin === true){ %>
+												<i style="color: red" class="fas fa-user"></i>
+											<% } else {%>
+													<i class="fas fa-user"></i>
+											<%}
+										}%>
+									<!--Show username -->
+									<%=comment.author.username%>
+								</Strong>
+								<!--Show when comment was made-->
+								<span class="float-right"><%=moment(comment.createdAt).fromNow()%></span>
+								
+								<!--Print the comment-->
+								<p><%=comment.text%></p>
+								
+								<!--If you are the owner of the comment, or are an admin user show the edit and delete buttons-->
+								<% if(currentUser && currentUser._id.equals(comment.author.id) || currentUser && currentUser.isAdmin){ %>
+								
+								<!--Edit button-->
+								<a class="btn btn-xs btn-warning" role="button" data-toggle="collapse" href="#collapseEdit<%=comment._id%>" aria-expanded="false" aria-controls="collapse<%=comment._id%>">Edit</a>
+								
+								<!--Delete button-->
+								<form class="deleteForm" action="/campgrounds/<%=campground._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
+									<button class="btn btn-xs btn-danger">Delete</button>
+								</form>
+								
+								<!--Edit comment form -->
+								<div class="collapse" id="collapseEdit<%=comment._id%>">
+									<div class="card card-body" style="border-left: 5px solid #ffbb33; margin-top: 15px">
+										<h4>Edit your comment <i class="far fa-edit"></i></h4>
+										<form id="edit-comment-form<%=comment._id%>" action="/campgrounds/<%=campground._id%>/comments/<%=comment._id%>?_method=PUT" method="POST">
+											<div class="form-group">
+												<input class="form-control" type="text" disabled value="<%=comment.author.username%>">
+											</div>
+											<div class="form-group">
+												<textarea class="form-control" name="comment[text]" placeholder="Comment text" form="edit-comment-form<%=comment._id%>" rows="5" cols="70"><%=comment.text%></textarea>
+											</div>
+											<div class="form-group">
+												<button class="btn btn-warning btn-sm">Edit comment <i class="fas fa-edit"></i></button>
+											</div>
+										</form>
+									</div>
+								</div>
+								<% } %>
+							</div>
+						</div>
+					<hr>
+					<% }) %>
+                </div>
+			</div>
+
+<%- include("../partials/footer") %>
